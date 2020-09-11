@@ -650,6 +650,10 @@ static void initField(tr_torrent* const tor, tr_info const* const inf, tr_stat c
         addFileStats(tor, initme);
         break;
 
+    case TR_KEY_group:
+        tr_variantInitStr(initme, tor->group != NULL ? tor->group : "", TR_BAD_SIZE);
+        break;
+
     case TR_KEY_hashString:
         tr_variantInitStr(initme, tor->info.hashString, TR_BAD_SIZE);
         break;
@@ -1394,6 +1398,7 @@ static char const* torrentSet(tr_session* session, tr_variant* args_in, tr_varia
         tr_variant* tmp_variant;
         bool boolVal;
         tr_torrent* tor;
+        char const* group = NULL;
 
         tor = torrents[i];
 
@@ -1403,6 +1408,11 @@ static char const* torrentSet(tr_session* session, tr_variant* args_in, tr_varia
             {
                 tr_torrentSetPriority(tor, tmp);
             }
+        }
+
+        if (tr_variantDictFindStr(args_in, TR_KEY_group, &group, NULL))
+        {
+            tr_torrentSetGroup(tor, group);
         }
 
         if (errmsg == NULL && tr_variantDictFindList(args_in, TR_KEY_labels, &tmp_variant))
