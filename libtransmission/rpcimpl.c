@@ -2037,6 +2037,48 @@ static char const* torrentAdd(tr_session* session, tr_variant* args_in, tr_varia
 ****
 ***/
 
+static char const* groupSet(tr_session* session, tr_variant* args_in, tr_variant* args_out, struct tr_rpc_idle_data* idle_data)
+{
+    TR_UNUSED(args_out);
+    TR_UNUSED(idle_data);
+
+    TR_ASSERT(idle_data == NULL);
+
+    char const* name;
+    tr_bandwidth_group* group;
+    bool u, d;
+    unsigned down, up;
+    int64_t intVal;
+
+    if (!tr_variantDictFindStr(args_in, TR_KEY_name, &name, NULL))
+    {
+        return "No group name given";
+    }
+
+    if (name && name[0] != '\0')
+    {
+        group = tr_bandwidthGroupFind(session, name);
+        tr_bandwidthGroupGetLimits(group, &u, &up, &d, &down);
+        if (tr_variantDictFindInt(args_in, TR_KEY_speed_limit_down, &intVal))
+        {
+            down = intVal;
+        }
+
+        tr_variantDictFindBool(args_in, TR_KEY_speed_limit_down_enabled, &d);
+        tr_variantDictFindInt(args_in, TR_KEY_speed_limit_up, &intVal);
+        down = intVal;
+        tr_variantDictFindBool(args_in, TR_KEY_speed_limit_up_enabled, &u);
+
+        tr_bandwidthGroupSetLimits(group, u, up, d, down);
+    }
+
+    return NULL;
+}
+
+/***
+****
+***/
+
 static char const* sessionSet(tr_session* session, tr_variant* args_in, tr_variant* args_out,
     struct tr_rpc_idle_data* idle_data)
 {
@@ -2686,6 +2728,7 @@ methods[] =
     { "port-test", false, portTest },
     { "blocklist-update", false, blocklistUpdate },
     { "free-space", true, freeSpace },
+    { "group-set", true, groupSet },
     { "session-close", true, sessionClose },
     { "session-get", true, sessionGet },
     { "session-set", true, sessionSet },

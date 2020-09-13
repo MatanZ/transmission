@@ -2545,6 +2545,9 @@ void tr_torrentSetGroup(tr_torrent* tor, char const* group)
 
     tr_free(tor->group);
     tor->group = tr_strdup(group);
+    tr_bandwidth_group* bw_group;
+    bw_group = tr_bandwidthGroupFind(tor->session, group);
+    tr_bandwidthSetParent(&tor->bandwidth, &bw_group->bandwidth);
 
     tr_torrentSetDirty(tor);
 
