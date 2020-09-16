@@ -493,7 +493,7 @@ void tr_bandwidthGroupRead(tr_session* session, char const* configDir)
             tr_variantDictFindStr(dict, TR_KEY_name, &name, NULL);
             if (name)
             {
-                bool u = false, d = false;
+                bool u = false, d = false, honors;
                 uint32_t up = 0, down = 0;
                 int64_t val;
 
@@ -512,6 +512,12 @@ void tr_bandwidthGroupRead(tr_session* session, char const* configDir)
                 tr_bandwidth_group* group;
                 group = tr_bandwidthGroupFind(session, name);
                 tr_bandwidthGroupSetLimits(group, u, up, d, down);
+
+                if (tr_variantDictFindBool(dict, TR_KEY_honorsSessionLimits, &honors))
+                {
+                    tr_bandwidthHonorParentLimits(&group->bandwidth, TR_UP, honors);
+                    tr_bandwidthHonorParentLimits(&group->bandwidth, TR_DOWN, honors);
+                }
             }
         }
     }
@@ -547,6 +553,7 @@ int tr_bandwidthGroupWrite(tr_session* session, char const* configDir)
         tr_variantDictAddInt(dict, TR_KEY_uploadLimit, up);
         tr_variantDictAddBool(dict, TR_KEY_downloadLimited, d);
         tr_variantDictAddInt(dict, TR_KEY_downloadLimit, down);
+        tr_variantDictAddBool(dict, TR_KEY_honorsSessionLimits, tr_bandwidthAreParentLimitsHonored(&group->bandwidth, TR_UP));
         group = group->next;
     }
 

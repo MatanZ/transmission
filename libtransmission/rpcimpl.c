@@ -1987,7 +1987,7 @@ static char const* groupSet(tr_session* session, tr_variant* args_in, tr_variant
 
     char const* name;
     tr_bandwidth_group* group;
-    bool u, d;
+    bool u, d, honors;
     unsigned down, up;
     int64_t intVal;
 
@@ -2014,6 +2014,12 @@ static char const* groupSet(tr_session* session, tr_variant* args_in, tr_variant
         }
 
         tr_bandwidthGroupSetLimits(group, u, up, d, down);
+
+        if (tr_variantDictFindBool(args_in, TR_KEY_honorsSessionLimits, &honors))
+        {
+            tr_bandwidthHonorParentLimits(&group->bandwidth, TR_UP, honors);
+            tr_bandwidthHonorParentLimits(&group->bandwidth, TR_DOWN, honors);
+        }
     }
 
     return NULL;
