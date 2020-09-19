@@ -1981,10 +1981,8 @@ static char const* torrentAdd(tr_session* session, tr_variant* args_in, tr_varia
 ****
 ***/
 
-static char const* groupGet(tr_session* s, tr_variant* args_in, tr_variant* args_out, struct tr_rpc_idle_data* idle_data)
+static char const* groupGet(tr_session* s, tr_variant* args_in, tr_variant* args_out, struct tr_rpc_idle_data* idle_data UNUSED)
 {
-    TR_UNUSED(idle_data);
-
     TR_ASSERT(idle_data == NULL);
 
     tr_variant* names;
