@@ -2028,8 +2028,8 @@ static char const* groupGet(tr_session* s, tr_variant* args_in, tr_variant* args
             tr_variantDictAddInt(dict, TR_KEY_downloadLimit, down);
             tr_variantDictAddBool(dict, TR_KEY_honorsSessionLimits,
                 tr_bandwidthAreParentLimitsHonored(&group->bandwidth, TR_UP));
-            group = group->next;
         }
+        group = group->next;
     }
 
     return NULL;
