@@ -1989,7 +1989,7 @@ static char const* groupGet(tr_session* s, tr_variant* args_in, tr_variant* args
 
     tr_variant* names;
     char const* name = NULL;
-    int names_count = 0;
+    int names_count = -1;
 
     if (!tr_variantDictFindStr(args_in, TR_KEY_name, &name, NULL) &&
         tr_variantDictFindList(args_in, TR_KEY_name, &names))
