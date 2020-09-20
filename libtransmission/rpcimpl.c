@@ -2037,6 +2037,65 @@ static char const* torrentAdd(tr_session* session, tr_variant* args_in, tr_varia
 ****
 ***/
 
+static char const* groupGet(tr_session* s, tr_variant* args_in, tr_variant* args_out, struct tr_rpc_idle_data* idle_data)
+{
+    TR_UNUSED(idle_data);
+
+    TR_ASSERT(idle_data == NULL);
+
+    tr_variant* names;
+    char const* name = NULL;
+    int names_count = 0;
+
+    if (tr_variantDictFindStr(args_in, TR_KEY_name, &name, NULL))
+    {
+        names_count = -1;
+    }
+    else if (tr_variantDictFindList(args_in, TR_KEY_name, &names))
+    {
+        names_count = tr_variantListSize(names);
+    }
+
+    tr_variant* list = tr_variantDictAddList(args_out, TR_KEY_group, 1);
+    tr_bandwidth_group* group = s->groups;
+    while (group)
+    {
+        bool nameInList = false;
+        if (names_count > 0)
+        {
+            int i;
+            for (i = 0; !nameInList && i < names_count; i++)
+            {
+                tr_variant* v = tr_variantListChild(names, i);
+                char const* l;
+                if (tr_variantIsString(v) && tr_variantGetStr(v, &l, NULL))
+                {
+                    nameInList = !strcmp(group->name, l);
+                }
+            }
+        }
+
+        if (nameInList || (name && !strcmp(name, group->name)) || (names_count == 0))
+        {
+            tr_variant* dict;
+            bool u, d;
+            uint32_t up, down;
+            dict = tr_variantListAddDict(list, 5);
+            tr_bandwidthGroupGetLimits(group, &u, &up, &d, &down);
+            tr_variantDictAddStr(dict, TR_KEY_name, group->name);
+            tr_variantDictAddBool(dict, TR_KEY_uploadLimited, u);
+            tr_variantDictAddInt(dict, TR_KEY_uploadLimit, up);
+            tr_variantDictAddBool(dict, TR_KEY_downloadLimited, d);
+            tr_variantDictAddInt(dict, TR_KEY_downloadLimit, down);
+            tr_variantDictAddBool(dict, TR_KEY_honorsSessionLimits,
+                tr_bandwidthAreParentLimitsHonored(&group->bandwidth, TR_UP));
+        }
+        group = group->next;
+    }
+
+    return NULL;
+}
+
 static char const* groupSet(tr_session* session, tr_variant* args_in, tr_variant* args_out, struct tr_rpc_idle_data* idle_data)
 {
     TR_UNUSED(args_out);
@@ -2737,6 +2796,7 @@ methods[] =
     { "port-test", false, portTest },
     { "blocklist-update", false, blocklistUpdate },
     { "free-space", true, freeSpace },
+    { "group-get", true, groupGet },
     { "group-set", true, groupSet },
     { "session-close", true, sessionClose },
     { "session-get", true, sessionGet },
